@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
 type CreateArticleBody = {
   title: string;
@@ -15,16 +15,44 @@ export async function POST(req: NextRequest) {
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized - Please sign in" },
-        { status: 401 }
+        { status: 401 },
       );
     }
+
+    const clerkUser = await currentUser();
+
+    if (!clerkUser) {
+      return NextResponse.json(
+        { error: "Clerk user not found" },
+        { status: 404 },
+      );
+    }
+
     const body: CreateArticleBody = await req.json();
 
     if (!body.title || !body.content || !body.summary) {
       return NextResponse.json(
         { error: "Missing required fields: title, content, or summary" },
-        { status: 400 }
+        { status: 400 },
       );
+    }
+
+    let dbUser = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!dbUser) {
+      dbUser = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email:
+            clerkUser.emailAddresses[0]?.emailAddress ||
+            `${userId}@example.com`,
+          name:
+            `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
+            "User",
+        },
+      });
     }
 
     const article = await prisma.article.create({
@@ -32,29 +60,26 @@ export async function POST(req: NextRequest) {
         title: body.title,
         content: body.content,
         summary: body.summary,
-        user: {
-          connect: {
-            clerkId: userId,
-          },
-        },
+        userId: dbUser.id,
       },
     });
-    console.log("article created", article);
+
     return NextResponse.json(
       { success: true, message: "Article created", article },
-      { status: 201 }
+      { status: 201 },
     );
-  } catch (err) {
+  } catch (err: any) {
     console.error("Article creation error:", err);
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to create article",
+        error: err?.message || String(err),
       },
-      { status: 400 }
+      { status: 500 },
     );
   }
 }
+
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();
@@ -62,7 +87,7 @@ export async function GET(req: NextRequest) {
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized - Please sign in" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -87,14 +112,14 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, articles }, { status: 200 });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Article fetch error:", err);
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to fetch articles",
+        error: err?.message || String(err),
       },
-      { status: 400 }
+      { status: 500 },
     );
   }
 }

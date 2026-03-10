@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Dialog,
   DialogContent,
@@ -14,28 +15,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import GeminiIcon from "../icons/GeminiIcon";
 import BookIcon from "../icons/BookIcon";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import axios from "axios";
 
+type QuizQuestion = {
+  question: string;
+  options: string[];
+  correctAnswer?: string;
+  answer?: string;
+};
+
 type SummarizedCardProps = {
-  quiz: [];
-  setQuiz: React.Dispatch<React.SetStateAction<[]>>;
+  quiz: QuizQuestion[];
+  setQuiz: React.Dispatch<React.SetStateAction<QuizQuestion[]>>;
   summary: string;
   setSummary: React.Dispatch<React.SetStateAction<string>>;
   title: string;
   content: string;
   setStep: React.Dispatch<React.SetStateAction<number>>;
   articleId: string;
-};
-
-type QuizQuestion = {
-  question: string;
-  options: string[];
-  correctAnswer?: string;
 };
 
 export default function SummarizedCard({
@@ -48,29 +49,49 @@ export default function SummarizedCard({
 }: SummarizedCardProps) {
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleTakeQuiz = async () => {
+  const handleTakeQuiz = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
     if (!title || !content) return;
     if (loading) return;
+    if (!articleId) {
+      console.error("articleId is missing");
+      return;
+    }
 
     setLoading(true);
+
     try {
       const response = await axios.post("/api/generate/quizzes", {
         content,
       });
-      setQuiz(response.data.result);
-      const parsedQuiz: QuizQuestion[] = JSON.parse(
-        response.data.result as unknown as string
-      );
-      setStep(3);
-      console.log("ressososososo", parsedQuiz);
-      console.log("articleId", articleId);
+
+      const rawQuiz = response.data.result;
+
+      console.log("rawQuiz:", rawQuiz);
+      console.log("articleId:", articleId);
+
+      const parsedQuiz: QuizQuestion[] =
+        typeof rawQuiz === "string" ? JSON.parse(rawQuiz) : rawQuiz;
+
+      if (!Array.isArray(parsedQuiz) || parsedQuiz.length === 0) {
+        console.error("parsedQuiz is invalid:", parsedQuiz);
+        return;
+      }
+
       const quizRes = await axios.post(`/api/article/${articleId}/quizzes`, {
         quizzes: parsedQuiz,
       });
 
-      console.log("article saved", quizRes);
-    } catch (err) {
-      console.error(err);
+      setQuiz(parsedQuiz as []);
+      console.log("quiz saved:", quizRes.data);
+
+      setStep(3);
+    } catch (err: any) {
+      console.error(
+        "HANDLE TAKE QUIZ ERROR:",
+        err?.response?.data || err.message,
+      );
     } finally {
       setLoading(false);
     }
@@ -84,25 +105,34 @@ export default function SummarizedCard({
           <CardTitle>Article Quiz Generator</CardTitle>
         </div>
       </CardHeader>
-      <CardContent className=" flex flex-col gap-2">
+
+      <CardContent className="flex flex-col gap-2">
         <CardDescription className="flex gap-2 items-center justify-start">
           <BookIcon /> Summarized content
         </CardDescription>
+
         <div className="text-black font-inter text-[24px] font-semibold leading-8 tracking-[-0.6px]">
           {title}
         </div>
+
         <div className="max-h-70 overflow-scroll text-black font-inter text-[14px] font-normal leading-5">
           {summary}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between gap-2 items-end ">
+
+      <CardFooter className="flex justify-between gap-2 items-end">
         <Dialog>
           <form>
             <DialogTrigger asChild>
-              <Button variant="outline" className="w-27 cursor-pointer">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-27 cursor-pointer"
+              >
                 See content
               </Button>
             </DialogTrigger>
+
             <DialogContent className="sm:max-w-157 p-7">
               <DialogHeader>
                 <DialogTitle className="text-black font-inter text-[24px] font-semibold leading-8 tracking-[-0.6px]">
@@ -115,10 +145,11 @@ export default function SummarizedCard({
             </DialogContent>
           </form>
         </Dialog>
+
         <Button
-          type="submit"
+          type="button"
           className="w-27 cursor-pointer"
-          disabled={!title || !content || loading}
+          disabled={!title || !content || loading || !articleId}
           onClick={handleTakeQuiz}
         >
           {loading ? "Take a quiz..." : "Take a quiz"}

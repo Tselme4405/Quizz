@@ -37,7 +37,10 @@ export default function InputCard({
   setArticleId,
 }: InputCardProps) {
   const [loading, setLoading] = useState<boolean>(false);
-  const handleGenerate = async () => {
+
+  const handleGenerate = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
     if (!title || !content) return;
 
     setLoading(true);
@@ -48,20 +51,30 @@ export default function InputCard({
 
       const generatedSummary = generateRes.data.result;
 
-      setSummary(generatedSummary);
-      setStep(2);
-
       const articleRes = await axios.post("/api/articles", {
-        title: title,
-        content: content,
+        title,
+        content,
         summary: generatedSummary,
       });
 
-      setArticleId(articleRes.data.article.id);
-      console.log("article saved", articleRes);
-      console.log("gkjhkhkjhkj", articleRes.data.article.id);
-    } catch (err) {
-      console.error(err);
+      const newArticleId = articleRes.data?.article?.id;
+
+      if (!newArticleId) {
+        throw new Error("Article ID not returned from /api/articles");
+      }
+
+      setSummary(generatedSummary);
+      setArticleId(newArticleId);
+
+      console.log("article saved", articleRes.data);
+      console.log("newArticleId", newArticleId);
+
+      setStep(2);
+    } catch (err: any) {
+      console.error(
+        "HANDLE GENERATE ERROR:",
+        err?.response?.data || err.message,
+      );
     } finally {
       setLoading(false);
     }
@@ -79,28 +92,31 @@ export default function InputCard({
           Your articles will saved in the sidebar for future reference.
         </CardDescription>
       </CardHeader>
+
       <CardContent>
         <form>
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
               <div className="flex gap-1">
                 <FileIcon />
-                <Label htmlFor="email">Article Title</Label>
+                <Label htmlFor="title">Article Title</Label>
               </div>
               <Input
-                id="email"
-                type="email"
+                id="title"
+                type="text"
                 placeholder="Enter a title for your article..."
                 required
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
+
             <div className="grid gap-2">
               <div className="flex items-center gap-1">
                 <FileIcon />
-                <Label htmlFor="password">Article Content</Label>
+                <Label htmlFor="content">Article Content</Label>
               </div>
               <Textarea
+                id="content"
                 required
                 placeholder="Paste your article content here..."
                 className="min-h-30 max-h-60"
@@ -110,9 +126,10 @@ export default function InputCard({
           </div>
         </form>
       </CardContent>
-      <CardFooter className="flex-col gap-2 items-end ">
+
+      <CardFooter className="flex-col gap-2 items-end">
         <Button
-          type="submit"
+          type="button"
           className="w-40 cursor-pointer"
           disabled={!title || !content || loading}
           onClick={handleGenerate}

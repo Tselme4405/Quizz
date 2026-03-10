@@ -1,60 +1,93 @@
-//api/article/[articleId]/quizzes/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "../../../../../../lib/prisma";
+import { GoogleGenAI } from "@google/genai";
 
-type QuizQuestion = {
-  question: string;
-  options: string[];
-  correctAnswer?: string;
-  answer: string;
-};
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ articleId: string }> }
-) {
+export async function POST(request: NextRequest) {
   try {
-    const { articleId } = await params;
-    const { quizzes } = await req.json();
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { error: "GEMINI_API_KEY is missing in .env" },
+        { status: 500 },
+      );
+    }
 
-    console.log("articleId:", articleId);
-    console.log("Received quizzes:", quizzes);
+    const body = await request.json();
+    const { content } = body;
 
-    await prisma.quiz.createMany({
-      data: quizzes.map((quiz: QuizQuestion) => ({
-        question: quiz.question,
-        options: quiz.options,
-        answer: quiz.answer,
-        articleId: articleId,
-      })),
-    });
-    return NextResponse.json({ quizzes, articleId }, { status: 200 });
-  } catch (err) {
-    console.error("Quiz post error:", err);
-    return NextResponse.json(
-      { success: false, error: "failed to post quizzes" },
-      { status: 500 }
-    );
+    if (!content || !content.trim()) {
+      return NextResponse.json(
+        { error: "No content provided" },
+        { status: 400 },
+      );
+    }
+
+    const prompt = `
+Generate 5 multiple-choice quiz questions from the article below.
+
+Return ONLY valid JSON.
+Do not add explanation.
+Do not add markdown.
+Do not wrap the response in triple backticks.
+
+Return exactly this format:
+[
+  {
+    "question": "Question here",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "answer": "Option A"
   }
-}
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ articleId: string }> }
-) {
-  try {
-    const { articleId } = await params;
+]
 
-    const quizzes = await prisma.quiz.findMany({
-      where: { articleId: articleId },
+Article:
+${content}
+`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
     });
 
-    return NextResponse.json({ quizzes }, { status: 200 });
-  } catch (err) {
-    console.error("Quiz get error:", err);
+    const rawText = response.text || "";
+
+    const cleanedText = rawText
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    let parsed;
+    try {
+      parsed = JSON.parse(cleanedText);
+    } catch (parseError: any) {
+      console.error("Quiz JSON parse error:", parseError);
+      console.error("Raw AI response:", rawText);
+
+      return NextResponse.json(
+        {
+          error: "AI did not return valid JSON",
+          raw: rawText,
+        },
+        { status: 500 },
+      );
+    }
+
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return NextResponse.json(
+        { error: "AI returned empty or invalid quiz array" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({ result: parsed }, { status: 200 });
+  } catch (err: any) {
+    console.error("Generate quizzes error:", err);
     return NextResponse.json(
-      { success: false, error: "failed to get quizzes" },
-      { status: 500 }
+      {
+        error: err?.message || "Failed to generate quizzes",
+      },
+      { status: 500 },
     );
   }
 }
