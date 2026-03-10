@@ -72,77 +72,90 @@ export default function QuickTest({
   };
 
   return (
-    <div className="min-w-140 h-72 flex flex-col items-center justify-center gap-6">
-      <div className="flex justify-between w-full">
-        <div className="flex-col gap-2 items-center">
-          <div className="flex gap-2 items-center">
+    <div className="w-full">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.04)] sm:p-8">
+        <div className="flex flex-col gap-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2.5">
             <GeminiIcon />
-            <div className="text-black text-center font-inter text-[24px] font-semibold leading-8 tracking-[-0.6px]">
-              Quick test
+                <div className="text-[24px] font-semibold tracking-[-0.02em] text-slate-950">
+                  Quick test
+                </div>
+              </div>
+              <div className="text-sm leading-6 text-slate-500">
+                Take a quick test about your knowledge from your content.
+              </div>
+            </div>
+            <Dialog>
+              <form>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-10 w-10 cursor-pointer rounded-xl border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                  >
+                    <XIcon className="size-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="border-slate-200 p-6 sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle className="text-[24px] font-semibold tracking-[-0.02em] text-slate-950">
+                      Are you sure?
+                    </DialogTitle>
+                    <DialogDescription className="text-sm leading-6 text-red-500">
+                      If you press &apos;Cancel&apos;, this quiz will restart
+                      from the beginning.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="flex-col gap-3 sm:flex-row sm:justify-between">
+                    <DialogClose asChild>
+                      <Button
+                        type="submit"
+                        className="h-11 w-full rounded-xl bg-slate-700 text-white hover:bg-slate-800 sm:w-auto"
+                      >
+                        Go back
+                      </Button>
+                    </DialogClose>
+                    <Button
+                      variant="outline"
+                      className="h-11 w-full rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 sm:w-auto"
+                      onClick={() => setStep(1)}
+                    >
+                      Cancel quiz
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </form>
+            </Dialog>
+          </div>
+
+          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5 sm:p-6">
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="text-lg font-medium leading-7 text-slate-950">
+                  {currentQuestion.question}
+                </div>
+                <div className="text-base font-medium text-slate-900">
+                  {currentQuestionIndex + 1}/
+                  <span className="text-sm font-medium text-slate-500">
+                    {parsedQuiz.length}
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {currentQuestion.options.map((option, optionIndex) => (
+                  <Button
+                    key={optionIndex}
+                    variant="outline"
+                    className="h-auto min-h-14 cursor-pointer justify-start rounded-2xl border-slate-200 bg-white px-4 py-3 text-left text-sm leading-6 text-slate-700 whitespace-normal transition-colors hover:bg-slate-100 hover:text-slate-950"
+                    onClick={() => handleAnswerClick(optionIndex)}
+                  >
+                    {optionIndex + 1}. {option}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
-          <div className="text-gray-500 text-center font-inter text-[16px] font-medium leading-6 tracking-normal">
-            Take a quick test about your knowledge from your content
-          </div>
-        </div>
-        <Dialog>
-          <form>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="cursor-pointer">
-                <XIcon />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="w-112.5 p-7">
-              <DialogHeader>
-                <DialogTitle className="text-black font-inter text-[24px] font-semibold leading-8 tracking-[-0.6px]">
-                  Are you sure?
-                </DialogTitle>
-                <DialogDescription className="text-red-500">
-                  If you press &apos;Cancel&apos;, this quiz will restart from
-                  the beginning.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter className="flex items-center justify-between w-full gap-11">
-                <DialogClose asChild>
-                  <Button type="submit" className="w-44.75">
-                    Go back
-                  </Button>
-                </DialogClose>
-                <Button
-                  variant="outline"
-                  className="w-44.75"
-                  onClick={() => setStep(1)}
-                >
-                  Cancel quiz
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </form>
-        </Dialog>
-      </div>
-      <div className="w-full h-fit bg-white border p-7 flex flex-col rounded-lg gap-5">
-        <div className="flex justify-between gap-2 items-center">
-          <div className="text-black font-inter text-[20px] font-medium leading-7 tracking-normal">
-            {currentQuestion.question}
-          </div>
-          <div className="text-black font-inter text-[20px] font-medium leading-7 tracking-normal">
-            {currentQuestionIndex + 1}/
-            <span className="text-gray-500 font-inter text-[16px] font-medium leading-6 tracking-normal">
-              {parsedQuiz.length}
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          {currentQuestion.options.map((option, optionIndex) => (
-            <Button
-              key={optionIndex}
-              variant="outline"
-              className="cursor-pointer text-left p-2 overflow-scroll max-w-90 wrap-break-word whitespace-normal h-fit"
-              onClick={() => handleAnswerClick(optionIndex)}
-            >
-              {optionIndex + 1}. {option}
-            </Button>
-          ))}
         </div>
       </div>
     </div>

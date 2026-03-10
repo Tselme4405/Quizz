@@ -44,67 +44,83 @@ export default function HistoryQuizCompleted({
     setSelectedOptions([]);
     setStep(6);
   };
+
   return (
-    <div className="w-107 min-h-154 flex flex-col items-center justify-center gap-6">
-      <div className="flex justify-between w-full">
-        <div className="flex-col gap-2 items-center">
-          <div className="flex gap-2 items-center">
+    <div className="w-full">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.04)] sm:p-8">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2.5">
             <GeminiIcon />
-            <div className="text-black text-center font-inter text-[24px] font-semibold leading-8 tracking-[-0.6px]">
+            <div className="text-[24px] font-semibold tracking-[-0.02em] text-slate-950">
               Quiz completed
             </div>
           </div>
-          <div className="text-gray-500 text-center font-inter text-[16px] font-medium leading-6 tracking-normal">
+          <div className="text-sm leading-6 text-slate-500">
             Let’s see what you did
           </div>
-        </div>
-      </div>
-      <div className="w-full h-full bg-white border p-7 flex flex-col rounded-lg gap-7">
-        <div className="flex justify-start items-center gap-2">
-          <div className="text-black font-inter text-[20px] font-medium leading-7 tracking-normal">
-            Your score:
           </div>
-          <div className="text-black font-inter text-[20px] font-medium leading-7 tracking-normal">
-            {score}/
-            <span className="text-gray-500 font-inter text-[16px] font-medium leading-6 tracking-normal">
-              {total}
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-col gap-5 max-h-100 overflow-scroll">
-          {result.map((r, index) => (
-            <div key={index} className="flex gap-3">
-              {r.isCorrect ? <CorrectIcon /> : <WrongIcon />}
-              <div className="flex flex-col gap-1 max-w-80">
-                <div className="text-gray-500 font-inter text-[12px] font-medium leading-4 tracking-normal">
-                  {index + 1}. {r.question}
-                </div>
-                <div className="text-neutral-900 font-inter text-[12px] font-medium leading-4 tracking-normal">
-                  Your answer: {r.selected}
-                </div>
-                <div className="text-green-500 font-inter text-[12px] font-medium leading-4 tracking-normal">
-                  {!r.isCorrect ? `Correct: ${r.correct}` : ""}
-                </div>
+
+          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5 sm:p-6">
+            <div className="flex items-center gap-2">
+              <div className="text-lg font-medium text-slate-950">
+                Your score:
+              </div>
+              <div className="text-lg font-medium text-slate-950">
+                {score}/
+                <span className="text-sm font-medium text-slate-500">
+                  {total}
+                </span>
               </div>
             </div>
-          ))}
-        </div>
-        <div className="flex justify-between gap-5">
-          <Button
-            variant="outline"
-            className="w-44 flex gap-2 items-center justify-center cursor-pointer"
-            onClick={handleRestartQuiz}
-          >
-            <ReloadIcon />
-            Restart quiz
-          </Button>
-          <Button
-            onClick={handleSaveAndLeave}
-            className="w-44 flex gap-2 items-center justify-center cursor-pointer"
-          >
-            <BookMarkIcon />
-            Save and leave
-          </Button>
+          </div>
+
+          <div className="max-h-[420px] space-y-3 overflow-y-auto">
+            {result.map((r, index) => (
+              <div
+                key={index}
+                className="flex gap-3 rounded-2xl border border-slate-100 bg-white p-4"
+              >
+                <div className="pt-0.5">
+                  {r.isCorrect ? <CorrectIcon /> : <WrongIcon />}
+                </div>
+                <div className="flex max-w-[520px] flex-col gap-1">
+                  <div className="text-xs font-medium uppercase tracking-[0.08em] text-slate-400">
+                    Question {index + 1}
+                  </div>
+                  <div className="text-sm font-medium leading-6 text-slate-900">
+                    {r.question}
+                  </div>
+                  <div className="text-sm leading-6 text-slate-600">
+                    Your answer: {r.selected}
+                  </div>
+                  {!r.isCorrect && (
+                    <div className="text-sm leading-6 text-emerald-600">
+                      Correct: {r.correct}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <Button
+              variant="outline"
+              className="h-11 w-full cursor-pointer rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 sm:w-auto"
+              onClick={handleRestartQuiz}
+            >
+              <ReloadIcon />
+              Restart quiz
+            </Button>
+            <Button
+              onClick={handleSaveAndLeave}
+              className="h-11 w-full cursor-pointer rounded-xl bg-slate-700 text-white hover:bg-slate-800 sm:w-auto"
+            >
+              <BookMarkIcon />
+              Save and leave
+            </Button>
+          </div>
         </div>
       </div>
     </div>

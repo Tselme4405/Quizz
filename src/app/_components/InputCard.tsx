@@ -45,6 +45,7 @@ export default function InputCard({
 
     setLoading(true);
     try {
+      console.log("generate payload:", { title, content });
       const generateRes = await axios.post("/api/generate", {
         content,
       });
@@ -70,10 +71,22 @@ export default function InputCard({
       console.log("newArticleId", newArticleId);
 
       setStep(2);
-    } catch (err: any) {
-      console.error(
-        "HANDLE GENERATE ERROR:",
-        err?.response?.data || err.message,
+    } catch (err: unknown) {
+      const axiosError = err as {
+        response?: { data?: { error?: string; message?: string } };
+        message?: string;
+      };
+
+      console.error("HANDLE GENERATE ERROR FULL:", err);
+      console.error("HANDLE GENERATE ERROR RESPONSE:", axiosError?.response);
+      console.error("HANDLE GENERATE ERROR DATA:", axiosError?.response?.data);
+      console.error("HANDLE GENERATE ERROR MESSAGE:", axiosError?.message);
+
+      alert(
+        axiosError?.response?.data?.error ||
+          axiosError?.response?.data?.message ||
+          axiosError?.message ||
+          "Generate хийхэд алдаа гарлаа",
       );
     } finally {
       setLoading(false);
@@ -81,45 +94,54 @@ export default function InputCard({
   };
 
   return (
-    <Card className="max-w-214 w-full min-h-110.5 p-7 gap-5">
-      <CardHeader>
-        <div className="flex gap-2 items-center">
+    <Card className="w-full rounded-3xl border border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+      <CardHeader className="space-y-3 px-6 pb-0 pt-6 sm:px-8 sm:pt-8">
+        <div className="flex items-center gap-2.5">
           <GeminiIcon />
-          <CardTitle>Article Quiz Generator</CardTitle>
+          <CardTitle className="text-[24px] font-semibold tracking-[-0.02em] text-slate-950">
+            Article Quiz Generator
+          </CardTitle>
         </div>
-        <CardDescription>
+        <CardDescription className="max-w-2xl text-sm leading-6 text-slate-500">
           Paste your article below to generate a summarize and quiz question.
           Your articles will saved in the sidebar for future reference.
         </CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="px-6 py-6 sm:px-8">
         <form>
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <div className="flex gap-1">
+          <div className="flex flex-col gap-7">
+            <div className="grid gap-2.5">
+              <div className="flex items-center gap-1.5">
                 <FileIcon />
-                <Label htmlFor="title">Article Title</Label>
+                <Label htmlFor="title" className="text-sm font-medium text-slate-700">
+                  Article Title
+                </Label>
               </div>
               <Input
                 id="title"
                 type="text"
                 placeholder="Enter a title for your article..."
                 required
+                value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                className="h-12 rounded-xl border-slate-200 bg-white px-4 text-sm shadow-none placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-300"
               />
             </div>
 
-            <div className="grid gap-2">
-              <div className="flex items-center gap-1">
+            <div className="grid gap-2.5">
+              <div className="flex items-center gap-1.5">
                 <FileIcon />
-                <Label htmlFor="content">Article Content</Label>
+                <Label htmlFor="content" className="text-sm font-medium text-slate-700">
+                  Article Content
+                </Label>
               </div>
               <Textarea
                 id="content"
                 required
                 placeholder="Paste your article content here..."
-                className="min-h-30 max-h-60"
+                value={content}
+                className="min-h-[260px] rounded-2xl border-slate-200 bg-white px-4 py-3 text-sm leading-6 shadow-none placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-300"
                 onChange={(e) => setContent(e.target.value)}
               />
             </div>
@@ -127,10 +149,10 @@ export default function InputCard({
         </form>
       </CardContent>
 
-      <CardFooter className="flex-col gap-2 items-end">
+      <CardFooter className="justify-end px-6 pb-6 pt-0 sm:px-8 sm:pb-8">
         <Button
           type="button"
-          className="w-40 cursor-pointer"
+          className="h-11 rounded-xl bg-slate-700 px-5 text-sm font-medium text-white shadow-none transition-colors hover:bg-slate-800 disabled:bg-slate-300"
           disabled={!title || !content || loading}
           onClick={handleGenerate}
         >

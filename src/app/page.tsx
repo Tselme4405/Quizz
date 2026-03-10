@@ -1,7 +1,6 @@
 "use client";
 import { AppSidebar } from "./_components/AppSidebar";
 import { Header } from "./header/Header";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import SwitchCards from "./_components/SwitchCards";
 import { useState } from "react";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
@@ -15,45 +14,41 @@ import {
 export default function Home() {
   const [step, setStep] = useState<number>(1);
   const [selectedArticleId, setSelectedArticleId] = useState<string>("");
+
   return (
-    <div className="h-screen  w-full flex flex-col  bg-[#FAFAFA]">
+    <div className="min-h-screen w-full bg-[#f6f7f8]">
       <Header />
       <SignedIn>
-        <div className="flex flex-1 overflow-hidden relative">
+        <div className="mx-auto flex min-h-[calc(100vh-73px)] w-full max-w-[1600px]">
           <AppSidebar
             setStep={setStep}
             setSelectedArticleId={setSelectedArticleId}
+            selectedArticleId={selectedArticleId}
           />
-          <div className="flex flex-col flex-1">
-            <div className="flex flex-1 items-center justify-center">
-              <div className="border-r flex pt-4 justify-center w-18 h-full bg-white">
-                <SidebarTrigger />
-              </div>
-
-              <main className="flex pt-6 justify-center w-full h-full">
-                <SwitchCards
-                  step={step}
-                  setStep={setStep}
-                  selectedArticleId={selectedArticleId}
-                />
-              </main>
-            </div>
-          </div>
+          <main className="flex min-w-0 flex-1 justify-center px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+            <SwitchCards
+              step={step}
+              setStep={setStep}
+              selectedArticleId={selectedArticleId}
+            />
+          </main>
         </div>
       </SignedIn>
       <SignedOut>
-        <Card className="w-full max-w-sm text-center absolute left-2/5 top-1/3">
-          <CardHeader className="gap-2">
-            <CardTitle className="text-xl font-semibold">
+        <div className="flex min-h-[calc(100vh-73px)] items-center justify-center px-4 py-10">
+          <Card className="w-full max-w-sm border border-slate-200 bg-white text-center shadow-sm">
+            <CardHeader className="gap-2">
+              <CardTitle className="text-xl font-semibold">
               Sign in required 🔒
-            </CardTitle>
-            <CardDescription className="text-sm">
-              You need to be singed in to continue.
-              <br />
-              Please sign in to access this feature.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+              </CardTitle>
+              <CardDescription className="text-sm text-slate-500">
+                You need to be singed in to continue.
+                <br />
+                Please sign in to access this feature.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
       </SignedOut>
     </div>
   );

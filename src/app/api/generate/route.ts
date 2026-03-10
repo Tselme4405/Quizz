@@ -28,13 +28,18 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ result: response.text });
   } catch (err: any) {
-    console.error("Generate error:", err);
+    console.error("GENERATE ERROR FULL:", err);
+    console.error("GENERATE ERROR MESSAGE:", err?.message);
+    console.error("GENERATE ERROR STATUS:", err?.status);
+    console.error("GENERATE ERROR STACK:", err?.stack);
+    console.error("GENERATE ERROR RAW:", JSON.stringify(err, null, 2));
+
     return NextResponse.json(
       {
-        error: "Server aldaa garlaa",
-        details: err?.message || String(err),
+        error: err?.message || err?.statusText || "Failed to generate summary",
+        status: err?.status || 500,
       },
-      { status: 500 },
+      { status: err?.status || 500 },
     );
   }
 }

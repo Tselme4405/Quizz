@@ -10,6 +10,13 @@ import ArticleHistory from "./ArticleHistory";
 import HistoryQuickTest from "./HistoryQuickTest";
 import HistoryQuizCompleted from "./HistoryQuizCompleted";
 
+type QuizQuestion = {
+  question: string;
+  options: string[];
+  correctAnswer?: string;
+  answer?: string;
+};
+
 type SwitchCardsProps = {
   step: number;
   setStep: React.Dispatch<React.SetStateAction<number>>;
@@ -24,10 +31,10 @@ export default function SwitchCards({
   const [summary, setSummary] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
-  const [quiz, setQuiz] = useState<[]>([]);
-  const [historyQuiz, setHistoryQuiz] = useState<[]>([]);
+  const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
+  const [historyQuiz, setHistoryQuiz] = useState<QuizQuestion[]>([]);
   const [articleId, setArticleId] = useState<string>("");
-  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
+  const [, setSelectedOptions] = useState<number[]>([]);
   const [result, setResult] = useState<
     {
       question: string;
@@ -36,32 +43,24 @@ export default function SwitchCards({
       isCorrect: boolean;
     }[]
   >([]);
+
   console.log("articleId in SwitchCards:", articleId);
+
   return (
-    <div className="max-w-214 w-full min-h-110.5 p-7 flex flex-col items-center  gap-5">
-      <div className="w-full flex flex-col items-start gap-5">
-        {step === 2 && (
+    <div className="flex w-full max-w-[760px] flex-col items-center gap-4">
+      <div className="flex w-full flex-col items-start gap-4">
+        {(step === 2 || step === 5) && (
           <Button
             onClick={() => {
               setStep(1);
             }}
             variant="outline"
-            className="w-10 h-10 flex items-center justify-center border rounded-md cursor-pointer"
+            className="h-10 w-10 cursor-pointer rounded-xl border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-950"
           >
-            <ChevronLeft />
+            <ChevronLeft className="size-4" />
           </Button>
         )}
-        {step === 5 && (
-          <Button
-            onClick={() => {
-              setStep(1);
-            }}
-            variant="outline"
-            className="w-10 h-10 flex items-center justify-center border rounded-md cursor-pointer"
-          >
-            <ChevronLeft />
-          </Button>
-        )}
+
         {step === 2 && (
           <SummarizedCard
             quiz={quiz}
@@ -75,6 +74,7 @@ export default function SwitchCards({
           />
         )}
       </div>
+
       {step === 1 && (
         <InputCard
           summary={summary}
@@ -96,6 +96,7 @@ export default function SwitchCards({
           setResult={setResult}
         />
       )}
+
       {step === 4 && (
         <QuizCompleted
           setStep={setStep}
@@ -104,6 +105,7 @@ export default function SwitchCards({
           setResult={setResult}
         />
       )}
+
       {step === 5 && (
         <ArticleHistory
           setStep={setStep}
@@ -111,6 +113,7 @@ export default function SwitchCards({
           setHistoryQuiz={setHistoryQuiz}
         />
       )}
+
       {step === 6 && (
         <HistoryQuickTest
           setStep={setStep}
@@ -119,6 +122,7 @@ export default function SwitchCards({
           setResult={setResult}
         />
       )}
+
       {step === 7 && (
         <HistoryQuizCompleted
           setStep={setStep}

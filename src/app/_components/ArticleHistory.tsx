@@ -26,11 +26,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 type ArticleHistoryProps = {
   setStep: React.Dispatch<React.SetStateAction<number>>;
   selectedArticleId: string;
-  setHistoryQuiz: React.Dispatch<React.SetStateAction<[]>>;
+  setHistoryQuiz: React.Dispatch<React.SetStateAction<QuizQuestion[]>>;
 };
 type QuizQuestion = {
   question: string;
   options: string[];
+  correctAnswer?: string;
   answer?: string;
 };
 
@@ -83,10 +84,10 @@ export default function ArticleHistory({
       const response = await axios.post("/api/generate/quizzes", {
         content,
       });
-      setHistoryQuiz(response.data.result);
-      const parsedQuiz: QuizQuestion[] = JSON.parse(
-        response.data.result as unknown as string
-      );
+      const parsedQuiz: QuizQuestion[] = Array.isArray(response.data.result)
+        ? response.data.result
+        : JSON.parse(response.data.result as string);
+      setHistoryQuiz(parsedQuiz);
       setStep(6);
       console.log("response from histoty", parsedQuiz);
     } catch (err) {
@@ -114,44 +115,58 @@ export default function ArticleHistory({
   };
 
   return (
-    <Card className="max-w-214 w-full min-h-110.5 p-7">
-      <CardHeader>
-        <div className="flex gap-2 items-center">
+    <Card className="w-full rounded-3xl border border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+      <CardHeader className="space-y-3 px-6 pb-0 pt-6 sm:px-8 sm:pt-8">
+        <div className="flex items-center gap-2.5">
           <GeminiIcon />
-          <CardTitle>Article Quiz Generator</CardTitle>
+          <CardTitle className="text-[24px] font-semibold tracking-[-0.02em] text-slate-950">
+            Article Quiz Generator
+          </CardTitle>
         </div>
-        <CardDescription className="flex gap-2 items-center justify-start">
+        <CardDescription className="flex items-center gap-2 text-sm text-slate-500">
           <BookIcon /> Summarized content
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-6 py-6 sm:px-8">
         {loading ? (
           <ArticleSkeleton />
         ) : (
-          <div className="flex flex-col gap-4 items-end">
-            <div className="w-full items-start text-black font-inter text-[24px] font-semibold leading-8 tracking-[-0.6px]">
+          <div className="flex flex-col gap-4">
+            <div className="w-full text-[26px] font-semibold leading-8 tracking-[-0.02em] text-slate-950">
               {titleData}
             </div>
-            <div className="w-full items-start">{summaryData}</div>
-            <div className="flex gap-1 w-full items-start">
-              <FileIcon />
-              <Label htmlFor="email">Article Content</Label>
+            <div className="w-full rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-sm leading-6 text-slate-700">
+              {summaryData}
             </div>
-            <div className="w-full line-clamp-3">{contentData}</div>
+            <div className="flex w-full items-center gap-1.5">
+              <FileIcon />
+              <Label htmlFor="article-content" className="text-sm font-medium text-slate-700">
+                Article Content
+              </Label>
+            </div>
+            <div
+              id="article-content"
+              className="w-full rounded-2xl border border-slate-100 bg-white p-4 text-sm leading-6 text-slate-600"
+            >
+              <div className="line-clamp-5">{contentData}</div>
+            </div>
 
             <Dialog>
               <form>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="cursor-pointer">
+                  <Button
+                    variant="outline"
+                    className="h-11 cursor-pointer rounded-xl border-slate-200 bg-white text-sm text-slate-700 transition-colors hover:bg-slate-50"
+                  >
                     See more
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-157 p-7">
+                <DialogContent className="border-slate-200 p-6 sm:max-w-3xl">
                   <DialogHeader>
-                    <DialogTitle className="text-black font-inter text-[24px] font-semibold leading-8 tracking-[-0.6px]">
+                    <DialogTitle className="text-[24px] font-semibold tracking-[-0.02em] text-slate-950">
                       {titleData}
                     </DialogTitle>
-                    <div className="text-black font-inter text-[14px] font-normal leading-5">
+                    <div className="max-h-[60vh] overflow-y-auto pt-2 text-sm leading-6 text-slate-700">
                       {contentData}
                     </div>
                   </DialogHeader>
@@ -161,10 +176,10 @@ export default function ArticleHistory({
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex-col gap-2 items-start">
+      <CardFooter className="justify-end px-6 pb-6 pt-0 sm:px-8 sm:pb-8">
         <Button
           type="submit"
-          className="w-31 cursor-pointer"
+          className="h-11 cursor-pointer rounded-xl bg-slate-700 px-5 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:bg-slate-300"
           onClick={handleTakeQuiz}
           disabled={loading}
         >

@@ -8,17 +8,17 @@ import {
 
 export function Header() {
   return (
-    <header className="flex w-full justify-between items-center py-2 px-6 gap-4 h-16 border border-[#E4E4E7] bg-white">
+    <header className="sticky top-0 z-20 flex h-[73px] w-full items-center justify-between border-b border-slate-200 bg-white/95 px-5 backdrop-blur sm:px-6 lg:px-8">
       <div className="flex items-center gap-4">
-        <div className="text-black font-semibold text-[24px] leading-9 tracking-[-0.528px]">
+        <div className="text-[22px] font-semibold tracking-[-0.02em] text-slate-950">
           Quiz app
         </div>
       </div>
-      <div className="flex gap-5">
+      <div className="flex items-center gap-3">
         <SignedOut>
           <SignInButton />
           <SignUpButton>
-            <button className="bg-[#000000] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+            <button className="h-10 cursor-pointer rounded-full bg-slate-950 px-5 text-sm font-medium text-white transition-colors hover:bg-slate-800">
               Sign Up
             </button>
           </SignUpButton>
